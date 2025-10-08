@@ -52,4 +52,8 @@ pub mod whitelist_transfer_hook {
         // Call the transfer hook logic
         ctx.accounts.transfer_hook(amount)
     }
+
+    pub fn initialize_mint_with_transfer_hook(ctx: Context<TokenFactory>) -> Result<()> {
+        ctx.accounts.init_mint(&ctx.bumps)
+    }
 }

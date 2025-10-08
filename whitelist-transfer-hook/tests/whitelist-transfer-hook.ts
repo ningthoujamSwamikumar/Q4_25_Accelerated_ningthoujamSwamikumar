@@ -3,12 +3,8 @@ import { Program } from "@coral-xyz/anchor";
 import {
   TOKEN_2022_PROGRAM_ID,
   getAssociatedTokenAddressSync,
-  createInitializeMintInstruction,
-  getMintLen,
-  ExtensionType,
   createTransferCheckedWithTransferHookInstruction,
   ASSOCIATED_TOKEN_PROGRAM_ID,
-  createInitializeTransferHookInstruction,
   createAssociatedTokenAccountInstruction,
   createMintToInstruction,
 } from "@solana/spl-token";
@@ -85,37 +81,14 @@ describe("whitelist-transfer-hook", () => {
   });
 
   it('Create Mint Account with Transfer Hook Extension', async () => {
-    const extensions = [ExtensionType.TransferHook];
-    const mintLen = getMintLen(extensions);
-    const lamports = await provider.connection.getMinimumBalanceForRentExemption(mintLen);
-
-    const transaction = new Transaction().add(
-      SystemProgram.createAccount({
-        fromPubkey: wallet.publicKey,
-        newAccountPubkey: mint2022.publicKey,
-        space: mintLen,
-        lamports: lamports,
-        programId: TOKEN_2022_PROGRAM_ID,
-      }),
-      createInitializeTransferHookInstruction(
-        mint2022.publicKey,
-        wallet.publicKey,
-        program.programId, // Transfer Hook Program ID
-        TOKEN_2022_PROGRAM_ID,
-      ),
-      createInitializeMintInstruction(mint2022.publicKey, 9, wallet.publicKey, null, TOKEN_2022_PROGRAM_ID),
-    );
-
-    const txSig = await sendAndConfirmTransaction(provider.connection, transaction, [wallet.payer, mint2022], {
-      skipPreflight: true,
-      commitment: 'finalized',
-    });
-
-    const txDetails = await program.provider.connection.getTransaction(txSig, {
-      maxSupportedTransactionVersion: 0,
-      commitment: 'confirmed',
-    });
-    //console.log(txDetails.meta.logMessages);
+    const txSig = await program.methods.initializeMintWithTransferHook()
+      .accounts({
+        mint: mint2022.publicKey,
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
+        user: provider.publicKey,
+      })
+      .signers([wallet.payer, mint2022])
+      .rpc({ commitment: "confirmed" });
 
     console.log("\nTransaction Signature: ", txSig);
   });

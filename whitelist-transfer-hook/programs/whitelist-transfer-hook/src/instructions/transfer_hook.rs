@@ -47,13 +47,15 @@ pub struct TransferHook<'info> {
 
 impl<'info> TransferHook<'info> {
     /// This function is called when the transfer hook is executed.
-    pub fn transfer_hook(&mut self, _amount: u64) -> Result<()> {
+    pub fn transfer_hook(&mut self, amount: u64) -> Result<()> {
         // Fail this instruction if it is not called from within a transfer hook
         self.check_is_transferring()?;
 
         if self.whitelist.address != self.owner.key() {
             panic!("TransferHook: Owner is not whitelisted");
         };
+
+        msg!("transfer hook called with {}", amount);
 
         Ok(())
     }
