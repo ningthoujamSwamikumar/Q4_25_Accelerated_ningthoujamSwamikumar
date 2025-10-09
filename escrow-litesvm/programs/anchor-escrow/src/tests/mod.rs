@@ -2,10 +2,14 @@
 mod tests {
 
     use {
-        crate::{accounts::Take, instruction},
+        crate::{
+            accounts::{Take, TakeAfterTime},
+            instruction,
+        },
         anchor_lang::{
-            prelude::msg, solana_program::program_pack::Pack, AccountDeserialize, InstructionData,
-            Key, ToAccountMetas,
+            prelude::{msg, Clock},
+            solana_program::program_pack::Pack,
+            AccountDeserialize, InstructionData, Key, ToAccountMetas,
         },
         anchor_spl::{
             associated_token::{self, spl_associated_token_account},
@@ -395,5 +399,202 @@ mod tests {
         let tx = Transaction::new(&[&maker], message, recent_blockhash);
         let tx_sig = svm.send_transaction(tx).unwrap();
         msg!("Refund successfull with tx sign: {:?}", tx_sig.signature);
+    }
+
+    #[test]
+    fn take_after_time() {
+        let (mut svm, maker) = setup();
+        let test_values = TestValues::new(&mut svm, &maker);
+        let mut initial_time = svm.get_sysvar::<Clock>();
+        println!("initial time: {}", initial_time.unix_timestamp);
+        //make
+        let make_ix = Instruction {
+            program_id: PROGRAM_ID,
+            accounts: crate::accounts::Make {
+                maker: maker.pubkey(),
+                mint_a: test_values.mint_a,
+                mint_b: test_values.mint_b,
+                maker_ata_a: test_values.maker_ata_a,
+                escrow: test_values.escrow,
+                vault: test_values.vault,
+                associated_token_program: spl_associated_token_account::ID,
+                token_program: TOKEN_PROGRAM_ID,
+                system_program: system_program::ID,
+            }
+            .to_account_metas(None),
+            data: instruction::Make {
+                deposit: 10,
+                seed: test_values.escrow_seed,
+                receive: 10,
+            }
+            .data(),
+        };
+
+        let message = Message::new(&[make_ix], Some(&maker.pubkey()));
+        let recent_blockhash = svm.latest_blockhash();
+
+        let tx = Transaction::new(&[&maker], message, recent_blockhash);
+        let tx_sig = svm.send_transaction(tx).unwrap();
+        msg!("Make transaction successful: {:?}", tx_sig.signature);
+
+        //take offer by the taker
+        let take_ix = Instruction {
+            program_id: PROGRAM_ID,
+            accounts: TakeAfterTime {
+                associated_token_program: spl_associated_token_account::ID,
+                escrow: test_values.escrow,
+                maker: maker.pubkey(),
+                maker_ata_b: test_values.maker_ata_b,
+                mint_a: test_values.mint_a,
+                mint_b: test_values.mint_b,
+                system_program: system_program::ID,
+                taker: test_values.taker.pubkey(),
+                taker_ata_a: test_values.taker_ata_a,
+                taker_ata_b: test_values.taker_ata_b,
+                token_program: TOKEN_PROGRAM_ID,
+                vault: test_values.vault,
+            }
+            .to_account_metas(None),
+            data: instruction::TakeAfterTime {}.data(),
+        };
+        let take_message = Message::new(&[take_ix], Some(&test_values.taker.pubkey()));
+        let recent_blockhash = svm.latest_blockhash();
+
+        let tx = Transaction::new(&[&test_values.taker], take_message, recent_blockhash);
+        let tx_sig = svm.send_transaction(tx);
+        println!("tx_sig: {:?}", tx_sig);
+        assert!(tx_sig.is_err());
+        msg!("Take transaction before time failed");
+
+        initial_time.unix_timestamp = initial_time.unix_timestamp.saturating_add(60 * 15 * 10000);
+        svm.set_sysvar::<Clock>(&initial_time);
+        println!("time set to {}", svm.get_sysvar::<Clock>().unix_timestamp);
+
+        //take offer by the taker
+        let take_ix = Instruction {
+            program_id: PROGRAM_ID,
+            accounts: TakeAfterTime {
+                associated_token_program: spl_associated_token_account::ID,
+                escrow: test_values.escrow,
+                maker: maker.pubkey(),
+                maker_ata_b: test_values.maker_ata_b,
+                mint_a: test_values.mint_a,
+                mint_b: test_values.mint_b,
+                system_program: system_program::ID,
+                taker: test_values.taker.pubkey(),
+                taker_ata_a: test_values.taker_ata_a,
+                taker_ata_b: test_values.taker_ata_b,
+                token_program: TOKEN_PROGRAM_ID,
+                vault: test_values.vault,
+            }
+            .to_account_metas(None),
+            data: instruction::TakeAfterTime {}.data(),
+        };
+        let take_message = Message::new(&[take_ix], Some(&test_values.taker.pubkey()));
+        svm.expire_blockhash();
+        let recent_blockhash = svm.latest_blockhash();
+
+        let tx = Transaction::new(&[&test_values.taker], take_message, recent_blockhash);
+        let tx_sig = svm.send_transaction(tx).unwrap();
+        msg!(
+            "Take transaction successful after time threshold: {:?}",
+            tx_sig.signature
+        );
+    }
+
+    #[test]
+    fn refund_before_time() {
+        let (mut svm, maker) = setup();
+        let test_values = TestValues::new(&mut svm, &maker);
+        let mut initial_time = svm.get_sysvar::<Clock>();
+        println!("initial time: {}", initial_time.unix_timestamp);
+
+        //make
+        let make_ix = Instruction {
+            program_id: PROGRAM_ID,
+            accounts: crate::accounts::Make {
+                maker: maker.pubkey(),
+                mint_a: test_values.mint_a,
+                mint_b: test_values.mint_b,
+                maker_ata_a: test_values.maker_ata_a,
+                escrow: test_values.escrow,
+                vault: test_values.vault,
+                associated_token_program: spl_associated_token_account::ID,
+                token_program: TOKEN_PROGRAM_ID,
+                system_program: system_program::ID,
+            }
+            .to_account_metas(None),
+            data: instruction::Make {
+                deposit: 10,
+                seed: test_values.escrow_seed,
+                receive: 10,
+            }
+            .data(),
+        };
+
+        let message = Message::new(&[make_ix], Some(&maker.pubkey()));
+        let recent_blockhash = svm.latest_blockhash();
+
+        let tx = Transaction::new(&[&maker], message, recent_blockhash);
+        let tx_sig = svm.send_transaction(tx).unwrap();
+        msg!("Make transaction successful: {:?}", tx_sig.signature);
+
+        initial_time.unix_timestamp = initial_time.unix_timestamp.saturating_add(60 * 5 * 1000);
+        svm.set_sysvar::<Clock>(&initial_time);
+        initial_time = svm.get_sysvar::<Clock>();
+        println!("updated time: {}", initial_time.unix_timestamp);
+
+        //refund before permissible time
+        let refund_ix = Instruction {
+            program_id: PROGRAM_ID,
+            accounts: crate::accounts::RefundBeforeTime {
+                escrow: test_values.escrow,
+                maker: maker.pubkey(),
+                maker_ata_a: test_values.maker_ata_a,
+                mint_a: test_values.mint_a,
+                system_program: system_program::ID,
+                token_program: spl_token::ID,
+                vault: test_values.vault,
+            }
+            .to_account_metas(None),
+            data: instruction::RefundBeforeTime {}.data(),
+        };
+        let message = Message::new(&[refund_ix], Some(&maker.pubkey()));
+        svm.expire_blockhash();
+        let recent_blockhash = svm.latest_blockhash();
+        let tx = Transaction::new(&[&maker], message, recent_blockhash);
+        let tx_sig = svm.send_transaction(tx);
+        assert!(tx_sig.is_ok());
+        msg!(
+            "Refund successfull before permissible time with tx sign: {:?}",
+            tx_sig.unwrap().signature
+        );
+
+        initial_time.unix_timestamp = initial_time.unix_timestamp.saturating_add(60 * 30 * 1000);
+        svm.set_sysvar::<Clock>(&initial_time);
+        println!("updated time: {}", svm.get_sysvar::<Clock>().unix_timestamp);
+
+        //refund after permissible time
+        let refund_ix = Instruction {
+            program_id: PROGRAM_ID,
+            accounts: crate::accounts::RefundBeforeTime {
+                escrow: test_values.escrow,
+                maker: maker.pubkey(),
+                maker_ata_a: test_values.maker_ata_a,
+                mint_a: test_values.mint_a,
+                system_program: system_program::ID,
+                token_program: spl_token::ID,
+                vault: test_values.vault,
+            }
+            .to_account_metas(None),
+            data: instruction::RefundBeforeTime {}.data(),
+        };
+        let message = Message::new(&[refund_ix], Some(&maker.pubkey()));
+        svm.expire_blockhash();
+        let recent_blockhash = svm.latest_blockhash();
+        let tx = Transaction::new(&[&maker], message, recent_blockhash);
+        let tx_sig = svm.send_transaction(tx);
+        assert!(tx_sig.is_err());
+        msg!("Refund failed");
     }
 }
