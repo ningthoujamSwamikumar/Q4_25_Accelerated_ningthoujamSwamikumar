@@ -3,8 +3,8 @@
 
 use anchor_lang::prelude::*;
 
-mod state;
 mod instructions;
+mod state;
 mod tests;
 
 use instructions::*;
@@ -27,5 +27,16 @@ pub mod anchor_escrow {
     pub fn take(ctx: Context<Take>) -> Result<()> {
         ctx.accounts.deposit()?;
         ctx.accounts.withdraw_and_close_vault()
+    }
+
+    pub fn take_after_time(ctx: Context<TakeAfterTime>) -> Result<()> {
+        ctx.accounts.ensure_time_threshold()?;
+        ctx.accounts.deposit()?;
+        ctx.accounts.withdraw_and_close_vault()
+    }
+
+    pub fn refund_before_time(ctx: Context<RefundBeforeTime>) -> Result<()> {
+        ctx.accounts.ensure_time_constraint()?;
+        ctx.accounts.refund_and_close_vault()
     }
 }

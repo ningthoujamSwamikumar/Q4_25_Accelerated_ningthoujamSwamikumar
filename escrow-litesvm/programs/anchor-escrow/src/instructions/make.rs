@@ -1,5 +1,8 @@
 use anchor_lang::prelude::*;
-use anchor_spl::{associated_token::AssociatedToken, token_interface::{Mint, TokenAccount, TokenInterface, TransferChecked, transfer_checked}};
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
+};
 
 use crate::state::Escrow;
 
@@ -45,6 +48,7 @@ impl<'info> Make<'info> {
             mint_b: self.mint_b.key(),
             receive,
             bump: bumps.escrow,
+            initialization_time: Clock::get()?.unix_timestamp as u64,
         });
 
         Ok(())
