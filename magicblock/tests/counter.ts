@@ -10,7 +10,7 @@ const ER_VALIDATOR = new anchor.web3.PublicKey(
     //"mAGicPQYBMvcYveUZA5F5UNNwyHvfYh5xkLS2Fr1mev" // local ER validator
 );
 
-describe.only("counter", () => {
+describe("counter", () => {
     let provider;
     let providerEphemeralRollup;
     let program;

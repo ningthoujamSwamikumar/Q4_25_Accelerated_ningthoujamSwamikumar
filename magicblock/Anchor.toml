@@ -7,6 +7,8 @@ skip-lint = false
 
 [programs.localnet]
 counter = "8M1NkwKGkrz8GrbWyCrvuEsHqrrt4UNnDaJsbhghCYyv"
+dice-roll = "Gvz1CyvoDFHE2zUtx5ovn7RWqGYtqBZ5ZbYHrnQXpkbP"
+er-state-account = "AZdi44i7DALnmupX5MZPoKCzvJ8s9CAUz15emtBm1aZ5"
 magicblock = "D6vA4ET7JpNV7xatvQoU5PiB6ZAjkwLfn3mwc9ED8zJi"
 
 [registry]

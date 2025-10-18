@@ -467,7 +467,7 @@ name = "counter"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
- "ephemeral-rollups-sdk",
+ "ephemeral-rollups-sdk 0.3.4",
 ]
 
 [[package]]
@@ -525,6 +525,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "dice-roll"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "ephemeral-rollups-sdk 0.2.12",
+ "ephemeral-vrf-sdk 0.1.2",
+]
+
+[[package]]
 name = "digest"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -546,18 +555,42 @@ dependencies = [
 
 [[package]]
 name = "ephemeral-rollups-sdk"
+version = "0.2.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "625e231ca030fde0126389693a393baf1d1f9f764e7417185e9f3f0f7fe9c599"
+dependencies = [
+ "anchor-lang",
+ "borsh 1.5.7",
+ "ephemeral-rollups-sdk-attribute-commit 0.2.12",
+ "ephemeral-rollups-sdk-attribute-delegate 0.2.12",
+ "ephemeral-rollups-sdk-attribute-ephemeral 0.2.12",
+ "solana-program",
+]
+
+[[package]]
+name = "ephemeral-rollups-sdk"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9abf6458ef02e5f3c14a2e3c457dc31199effcb847a1df5496c43d0fb523b840"
 dependencies = [
  "anchor-lang",
  "borsh 1.5.7",
- "ephemeral-rollups-sdk-attribute-commit",
- "ephemeral-rollups-sdk-attribute-delegate",
- "ephemeral-rollups-sdk-attribute-ephemeral",
+ "ephemeral-rollups-sdk-attribute-commit 0.3.4",
+ "ephemeral-rollups-sdk-attribute-delegate 0.3.4",
+ "ephemeral-rollups-sdk-attribute-ephemeral 0.3.4",
  "magicblock-delegation-program",
  "magicblock-magic-program-api",
  "solana-program",
+]
+
+[[package]]
+name = "ephemeral-rollups-sdk-attribute-commit"
+version = "0.2.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "661e47aee1ed4137160107f956a65fb33db0c5073f52ee1231756e280accdd99"
+dependencies = [
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -572,9 +605,31 @@ dependencies = [
 
 [[package]]
 name = "ephemeral-rollups-sdk-attribute-delegate"
+version = "0.2.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a2879070124e9b50d018d1e4135d86e34e13faab4a597bab0c3266f05fb0fa2"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "ephemeral-rollups-sdk-attribute-delegate"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "656af0c7b6c65a884dd14ca5804d8bc31e1a9248d3ce90eb56f8c20d7d38a948"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "ephemeral-rollups-sdk-attribute-ephemeral"
+version = "0.2.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f068f197b17e61812fe9cefc27d0d87ca22e3f17d328520189a7ca40531f34f4"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -593,10 +648,65 @@ dependencies = [
 ]
 
 [[package]]
+name = "ephemeral-vrf-sdk"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "82dc12209b6b99567668c4e9556de36575c7205f58d2f79c1b184434c6208f70"
+dependencies = [
+ "anchor-lang",
+ "borsh 1.5.7",
+ "ephemeral-vrf-sdk-vrf-macro 0.1.2",
+ "solana-program",
+]
+
+[[package]]
+name = "ephemeral-vrf-sdk"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d76375ad63cf1356600ce739c4115498585357e2dd36c579c5c0204e05f4505e"
+dependencies = [
+ "anchor-lang",
+ "borsh 1.5.7",
+ "ephemeral-vrf-sdk-vrf-macro 0.2.0",
+ "solana-program",
+]
+
+[[package]]
+name = "ephemeral-vrf-sdk-vrf-macro"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b580de6cca8ead1362bf6dc4fea212ec0f3fa00f0483316eb7381615ef8ce015"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "ephemeral-vrf-sdk-vrf-macro"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7c7540e04c4cf140d48f93611488d82f785a83553ea63d06a3b552397b51a975"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "equivalent"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
+
+[[package]]
+name = "er-state-account"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "ephemeral-rollups-sdk 0.2.12",
+ "ephemeral-vrf-sdk 0.2.0",
+]
 
 [[package]]
 name = "feature-probe"
