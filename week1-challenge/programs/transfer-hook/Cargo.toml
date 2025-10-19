@@ -24,3 +24,8 @@ spl-discriminator = "0.4"
 spl-tlv-account-resolution = "0.10.0"
 spl-transfer-hook-interface = "0.10.0"
 
+[dev-dependencies]
+litesvm = "0.8.1"
+litesvm-token = "0.8.1"
+solana-sdk = "3.0.0"
+

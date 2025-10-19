@@ -49,7 +49,9 @@ pub struct TransferHook<'info> {
 
 impl<'info> TransferHook<'info> {
     pub fn transfer_hook(&self, _amount: u64) -> Result<()> {
-        self.check_is_transferring()
+        self.check_is_transferring()?;
+        // whitelist check is done in the accounts only 
+        Ok(())
     }
 
     /// Check if the transfer hook is being called during token transfer

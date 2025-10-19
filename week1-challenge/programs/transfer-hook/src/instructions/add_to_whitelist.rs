@@ -1,12 +1,21 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenAccount};
 
-use crate::Whitelist;
+use crate::{Whitelist, WhitelistConfig};
 
 #[derive(Accounts)]
 pub struct AddToWhitelist<'info> {
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = *admin.key == whitelist_config.admin
+    )]
     pub admin: Signer<'info>,
+
+    #[account(
+        seeds = [b"whitelist_config"],
+        bump = whitelist_config.bump,
+    )]
+    pub whitelist_config: Account<'info, WhitelistConfig>,
 
     /// CHECK: this account is the token account authority. It doesn't need to check
     pub user: AccountInfo<'info>,

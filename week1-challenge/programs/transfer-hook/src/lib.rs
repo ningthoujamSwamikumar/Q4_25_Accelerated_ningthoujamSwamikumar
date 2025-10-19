@@ -1,5 +1,8 @@
 #![allow(unexpected_cfgs, deprecated)]
 
+#[cfg(test)]
+pub mod tests;
+
 pub mod instructions;
 pub mod state;
 
@@ -40,6 +43,10 @@ pub mod transfer_hook {
 
     pub fn init_mint(_ctx: Context<InitMint>) -> Result<()> {
         Ok(())
+    }
+
+    pub fn init_whitelist(ctx: Context<InitWhitelist>) -> Result<()> {
+        ctx.accounts.init_whitelist(ctx.bumps)
     }
 
     pub fn add_to_whitelist(ctx: Context<AddToWhitelist>) -> Result<()> {
