@@ -4,8 +4,7 @@ use anchor_spl::{
     token_interface::{Mint, TokenAccount, TokenInterface},
 };
 
-use crate::{initialize_vault, VaultPda};
-use transfer_hook::ID as transfer_hook_id;
+use crate::{TRANSFER_HOOK_ID, VaultPda};
 
 #[derive(Accounts)]
 pub struct InitializeVault<'info> {
@@ -30,7 +29,7 @@ pub struct InitializeVault<'info> {
     pub vault_pda: Account<'info, VaultPda>,
 
     #[account(
-        extensions::transfer_hook::program_id = transfer_hook_id,
+        extensions::transfer_hook::program_id = TRANSFER_HOOK_ID,
     )]
     pub mint: InterfaceAccount<'info, Mint>,
 
@@ -42,7 +41,7 @@ pub struct InitializeVault<'info> {
 impl<'info> InitializeVault<'info> {
     pub fn initialize_vault(&mut self, bumps: InitializeVaultBumps) -> Result<()> {
         self.vault_pda.set_inner(VaultPda {
-            authority: self.admin.key(),
+            close_authority: self.admin.key(),
             bump: bumps.vault_pda,
         });
         Ok(())
