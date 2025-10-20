@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token_interface::{Mint, TokenAccount};
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
 use crate::{Whitelist, WhitelistConfig};
 
@@ -25,6 +25,7 @@ pub struct AddToWhitelist<'info> {
     #[account(
         associated_token::mint = mint,
         associated_token::authority = user,
+        associated_token::token_program = token_program
     )]
     pub token_account: InterfaceAccount<'info, TokenAccount>,
 
@@ -38,6 +39,7 @@ pub struct AddToWhitelist<'info> {
     pub whitelist: Account<'info, Whitelist>,
 
     pub system_program: Program<'info, System>,
+    pub token_program: Interface<'info, TokenInterface>,
 }
 
 impl<'info> AddToWhitelist<'info> {

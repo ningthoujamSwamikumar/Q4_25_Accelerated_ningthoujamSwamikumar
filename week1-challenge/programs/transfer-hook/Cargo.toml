@@ -28,4 +28,5 @@ spl-transfer-hook-interface = "0.10.0"
 litesvm = "0.8.1"
 litesvm-token = "0.8.1"
 solana-sdk = "3.0.0"
+spl-associated-token-account = "7.0.0"
 
