@@ -1,5 +1,3 @@
-use std::result;
-
 use anchor_lang::{system_program, AccountDeserialize, InstructionData};
 use anchor_spl::{
     associated_token,
@@ -9,12 +7,15 @@ use anchor_spl::{
             extension::{
                 transfer_hook::TransferHook, BaseStateWithExtensions, StateWithExtensions,
             },
+            instruction,
             state::Mint,
         },
     },
 };
 use litesvm::{types::TransactionResult, LiteSVM};
-use litesvm_token::{CreateAssociatedTokenAccount, MintTo, Transfer, TransferChecked};
+use litesvm_token::{
+    CreateAssociatedTokenAccount, MintTo, MintToChecked, Transfer, TransferChecked,
+};
 use solana_sdk::{
     account::Account,
     message::{AccountMeta, Instruction},
@@ -93,6 +94,17 @@ fn test_init_mint() {
         .get_account(&setup_values.mint_keypair.pubkey())
         .unwrap();
 
+    assert!(
+        mint_account.lamports > 0,
+        "Mint account should be rent exempt"
+    );
+
+    let mint_state = StateWithExtensions::<Mint>::unpack(&mint_account.data[..]).unwrap();
+    let mint_authority = mint_state.base.mint_authority.unwrap();
+    assert!(
+        mint_authority.to_bytes() == setup_values.payer.pubkey().to_bytes(),
+        "Unexpected mint authority"
+    );
     assert_transfer_hook(&mint_account, &setup_values.program_id);
 
     println!("✅ init_mint successfully passed.");
@@ -387,6 +399,12 @@ fn test_transfer_hook() {
     .send()
     .unwrap();
 
+    let payer_ata_account = setup_values.svm.get_account(&payer_ata).unwrap();
+    assert!(
+        payer_ata_account.lamports > 0,
+        "Payer ata should be rent exempted"
+    );
+
     let payer_copy = setup_values.payer.insecure_clone();
     add_whitelist(
         &mut setup_values,
@@ -411,14 +429,13 @@ fn test_transfer_hook() {
     .send()
     .unwrap();
 
-    MintTo::new(
+    MintToChecked::new(
         &mut setup_values.svm,
         &setup_values.payer,
         &setup_values.mint_keypair.pubkey(),
         &payer_ata,
         50,
     )
-    .owner(&setup_values.payer)
     .token_program_id(&setup_values.token2022_program_id)
     .send()
     .unwrap();
