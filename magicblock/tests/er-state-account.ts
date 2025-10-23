@@ -110,7 +110,7 @@ describe.only("er-state-account", () => {
     let userAccountState = await providerEphemeralRollup.connection.getAccountInfo(userAccount);
     const userAccountData = program.coder.accounts.decode("userAccount", userAccountState.data) as anchor.IdlAccounts<ErStateAccount>["userAccount"];
 
-    console.log("delegated state before random update: ", userAccountData);
+    console.log("delegated state before random update: ", userAccountData.data.toNumber());
 
     let clientSeed = Math.random() * 10;
     const tx = await ephemeralProgram.methods.updateRandomDelegated(clientSeed).accounts({
@@ -119,18 +119,19 @@ describe.only("er-state-account", () => {
     }).rpc({ commitment: "confirmed" });
     console.log("\nState Updated with Ranom value: ", tx);
     const lateshBlockhash = await providerEphemeralRollup.connection.getLatestBlockhash();
-    await provider.connection.confirmTransaction({
+    await providerEphemeralRollup.connection.confirmTransaction({
       blockhash: lateshBlockhash.blockhash,
       lastValidBlockHeight: lateshBlockhash.lastValidBlockHeight,
       signature: tx
     });
 
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
     const userAccountStatePostUpdate = await providerEphemeralRollup.connection.getAccountInfo(userAccount);
-    const userAccountDataPostUpdate = program.coder.accounts.decode("userAccount", userAccountStatePostUpdate.data) as anchor.IdlAccounts<ErStateAccount>["userAccount"];
+    const userAccountDataPostUpdate = ephemeralProgram.coder.accounts.decode("userAccount", userAccountStatePostUpdate.data) as anchor.IdlAccounts<ErStateAccount>["userAccount"];
 
-    console.log("delegated state after random update: ", userAccountDataPostUpdate);
-
-    assert(userAccountData.data.eq(userAccountDataPostUpdate.data), "Account state likely is not updated!");
+    console.log("delegated state after random update: ", userAccountDataPostUpdate.data.toNumber());
+    assert(!userAccountData.data.eq(userAccountDataPostUpdate.data), "Account state likely is not updated!");
   })
 
   it("Commit and undelegate from Ephemeral Rollup!", async () => {
@@ -178,3 +179,45 @@ describe.only("er-state-account", () => {
     console.log("\nUser Account Closed: ", tx);
   });
 });
+
+/*
+User Account initialized:  4cHcZRD1i4mPxbkg1KQLJdGrzHux3E6bAyHzvMXzyKc6vbeBRTsTQD1KmyGyp8a1L2VWHkFcHZSr9fviwyGLfXUx
+    ✔ Is initialized! (3309ms)
+
+User Account State Updated:  3Qwm9ZmgYXRgdFzVEZgGQELetHmFeDhXcoxLXZ3swumQXdj38Qoxt6HFtD65tgvPZYZdtjxBSoX6S6oJ2FtD8JNo
+    ✔ Update State! (3882ms)
+
+State Updated with Ranom value:  BuSEuGmRUSGQe7M288dvY1XCfrs2RBkHdd4gTZP6QrHdjnud2bquFAZQ93mqQU76uR35N4pHvcHpL3HHmMKWtWg
+    ✔ Update State with Random value! (7730ms)
+
+User Account Delegated to Ephemeral Rollup:  2188KhPgXq6d1gH58YZ27HA82Nz1bi4rrQHkGAV7knVRc85Uhvbff2YfWMvpJQ6zA6WTE6FRytauVwvy8QPnS63o
+    ✔ Delegate to Ephemeral Rollup! (3431ms)
+
+User Account State Updated:  4dYGpAWz6C4oSYdWfaFn5YieFUcaQTgDrFh2N3RdV2DkiH21kG9wuquHQzBgMGq2LATB4oiZHzzLamvbGJH7XtPF
+    ✔ Update State and Commit to Base Layer! (6012ms)
+delegated state before random update:  43
+
+State Updated with Random value:  gXon2PwvsFGbXbtYjLNEixCGDqgwnGrMoHXmj1Xneqgmb18EsngWAZNxWj1FBGyPnhSBtUExaa9WrH4QzDjbSwK
+delegated state after random update:  43
+    1) Update Delegated State with Random value!
+User Account Info:  {
+  data: <Buffer d3 21 88 10 ba 6e f2 7f 8f 10 53 da f9 bc 02 f9 ff 2a 8d 99 ef 4f 11 4c b8 c9 32 0e 85 54 a2 82 7e cf 6e 2b b6 37 9e 5b 2b 00 00 00 00 00 00 00 fe>,
+  executable: false,
+  lamports: 1231920,
+  owner: PublicKey [PublicKey(AZdi44i7DALnmupX5MZPoKCzvJ8s9CAUz15emtBm1aZ5)] {
+    _bn: <BN: 8e15461cd8db1da72a8b606cd8f790987f24c518087d8139c308be8e891fa1a8>
+  },
+  rentEpoch: 18446744073709552000,
+  space: 49
+}
+User account 7j7GRSm9R12hky3j8NXbqKkkKYG5RAQc57JSrDyV1CYr
+
+User Account Undelegated:  5B9T7qrk8bbRrrvGgonTNXWgKQXAxReCUvyAoKmjUewToBeWEi6BA3LvHBqXhUZJuWRMNJ3ASEq8ix2TdsGQSPHT
+    ✔ Commit and undelegate from Ephemeral Rollup! (6215ms)
+
+User Account State Updated:  3M4C5ssDyar1sjgxPPW27Px4Qmw2gfXboPUgpeU8K8WQ1c2QSEWFF6L9aX7rFHgC3DekzbKfnzB87Y2PwQkcGuaN
+    ✔ Update State! (3575ms)
+
+User Account Closed:  4pnRpSiMyiSYcvtkGzowRR7HMnZfhDiERk9QjcjuxzsUwP7ZdEonU6QqqJGscNCqpYJbN53bHNHJA5zBy66NCb4r
+    ✔ Close Account! (4260ms)
+*/
