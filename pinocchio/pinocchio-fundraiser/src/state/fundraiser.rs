@@ -3,6 +3,7 @@ use pinocchio::{account_info::AccountInfo, program_error::ProgramError, pubkey::
 use crate::state::HasLen;
 
 #[repr(C)]
+#[derive(Debug)]
 pub struct FundRaiser {
     authority: [u8; 32], //maker
     mint_to_raise: [u8; 32],
@@ -49,7 +50,7 @@ impl FundRaiser {
     }
 
     pub fn amount_to_raise(&self) -> u64 {
-        u64::from_be_bytes(self.amount_to_raise)
+        u64::from_le_bytes(self.amount_to_raise)
     }
 
     pub fn set_amount_to_raise(&mut self, amount: &u64) {
@@ -60,8 +61,8 @@ impl FundRaiser {
         u64::from_le_bytes(self.current_amount)
     }
 
-    pub fn set_current_amount(&mut self, amount: &u64) {
-        self.current_amount = amount.to_le_bytes();
+    pub fn add_current_amount(&mut self, amount: &u64) {
+        self.current_amount = (self.current_amount() + amount).to_le_bytes();
     }
 
     pub fn start_time(&self) -> i64 {

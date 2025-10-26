@@ -11,6 +11,9 @@ pub const TOKEN_2022_PROGRAM_ID: [u8; 32] = [
     0xb6, 0x1a, 0xfc, 0x4d, 0x83, 0xb9, 0x0d, 0x27, 0xfe, 0xbd, 0xf9, 0x28, 0xd8, 0xa1, 0x8b, 0xfc,
 ];
 
+pub const MAX_CONTRIBUTION_PC: u8 = 10; // percentage of the amount to raise
+pub const MIN_CONTRIBUTION_TOKEN_AMOUNT: u8 = 1; //whole token, not in decimals
+
 #[repr(u8)]
 pub(crate) enum FundraiserInstruction {
     Initialize,

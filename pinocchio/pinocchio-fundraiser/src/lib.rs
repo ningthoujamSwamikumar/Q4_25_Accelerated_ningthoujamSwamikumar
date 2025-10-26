@@ -5,8 +5,11 @@ use pinocchio::{
     program_error::ProgramError, pubkey::Pubkey, ProgramResult,
 };
 
-use crate::instructions::{initialize::process_initialize, FundraiserInstruction};
+use crate::instructions::{
+    contribute::process_contribution, initialize::process_initialize, FundraiserInstruction,
+};
 
+pub mod error;
 pub mod instructions;
 pub mod state;
 
@@ -30,7 +33,7 @@ pub fn process_instruction(
 
     match FundraiserInstruction::try_from(discriminator)? {
         FundraiserInstruction::Initialize => process_initialize(accounts, data),
-        // FundraiserInstruction::Contribute => todo!(),
+        FundraiserInstruction::Contribute => process_contribution(accounts, data),
         // FundraiserInstruction::Refund => todo!(),
         // FundraiserInstruction::CheckContributions => todo!(),
         _ => Err(ProgramError::InvalidInstructionData),

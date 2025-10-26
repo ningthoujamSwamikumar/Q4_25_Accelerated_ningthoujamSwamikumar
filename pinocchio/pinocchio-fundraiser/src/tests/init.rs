@@ -13,6 +13,8 @@ use solana_sdk::{
     transaction::Transaction,
 };
 
+use crate::state::{fundraiser::FundRaiser, HasLen};
+
 pub(super) fn program_id() -> Pubkey {
     Pubkey::from(crate::ID)
 }
@@ -42,6 +44,7 @@ pub(super) struct InitializeData {
     pub vault: Pubkey,
     pub amount_to_raise: u64,
     pub start_time: i64,
+    pub start_time_from_now: i64,
     pub duration: u8,
 }
 
@@ -67,7 +70,8 @@ impl InitializeData {
         );
 
         let amount_to_raise: u64 = 100_000_000u64;
-        let start_time: i64 = svm.get_sysvar::<Clock>().unix_timestamp + 10i64;
+        let start_time_from_now = 10i64;
+        let start_time: i64 = svm.get_sysvar::<Clock>().unix_timestamp + start_time_from_now;
         let duration: u8 = 30;
 
         Self {
@@ -80,6 +84,7 @@ impl InitializeData {
             amount_to_raise,
             start_time,
             duration,
+            start_time_from_now,
         }
     }
 }
@@ -124,5 +129,29 @@ pub fn test_initialize() {
     let (mut svm, payer) = setup();
     let init_data = InitializeData::initialize_data(&mut svm, &payer);
 
-    initialize(&mut svm, &payer, &init_data).unwrap();
+    let tx = initialize(&mut svm, &payer, &init_data).unwrap();
+    println!(
+        "initialize fundraiser successful with sig: {}",
+        tx.signature
+    );
+
+    let fundraiser_account = svm.get_account(&init_data.fundraiser_pda.0).unwrap();
+    assert!(
+        fundraiser_account.data.len() == FundRaiser::LEN,
+        "Fundraiser acccount data len should be equal to its LEN"
+    );
+    let fundraiser_data = unsafe { &*(fundraiser_account.data.as_ptr() as *const FundRaiser) };
+    println!(
+        "fundraiser amount to raised comparision: {} vs {}",
+        fundraiser_data.amount_to_raise(),
+        init_data.amount_to_raise
+    );
+    assert!(
+        fundraiser_data.amount_to_raise() == init_data.amount_to_raise,
+        "Amount to raise should be matched"
+    );
+    assert!(
+        fundraiser_data.authority() == payer.pubkey().to_bytes(),
+        "fundraiser authority should be matched"
+    );
 }
