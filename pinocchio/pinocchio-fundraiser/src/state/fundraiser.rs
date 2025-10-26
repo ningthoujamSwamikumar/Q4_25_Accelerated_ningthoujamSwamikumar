@@ -1,4 +1,4 @@
-use pinocchio::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
+use pinocchio::{account_info::AccountInfo, msg, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::state::HasLen;
 
@@ -62,6 +62,7 @@ impl FundRaiser {
     }
 
     pub fn add_current_amount(&mut self, amount: &u64) {
+        pinocchio_log::log!("amount adding {}", *amount);
         self.current_amount = (self.current_amount() + amount).to_le_bytes();
     }
 

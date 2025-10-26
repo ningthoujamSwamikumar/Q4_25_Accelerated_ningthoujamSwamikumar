@@ -5,6 +5,8 @@ pub enum FundraiserError {
     TooLate,
     MaxContribution,
     MinContribution,
+    TargetAmountRaised,
+    TargetAmountNotMet,
 }
 
 impl From<FundraiserError> for ProgramError {
@@ -22,6 +24,8 @@ impl TryFrom<u32> for FundraiserError {
             1 => Self::TooLate,
             2 => Self::MaxContribution,
             3 => Self::MinContribution,
+            4 => Self::TargetAmountRaised,
+            5 => Self::TargetAmountNotMet,
             _ => return Err(ProgramError::InvalidArgument),
         };
         Ok(err)
@@ -38,6 +42,8 @@ impl ToStr for FundraiserError {
             FundraiserError::TooLate => "Error: Contribution too late.",
             FundraiserError::MaxContribution => "Error: Max limit reached.",
             FundraiserError::MinContribution => "Error: Need to pass Min limit.",
+            FundraiserError::TargetAmountRaised => "Error: Target amount is met.",
+            FundraiserError::TargetAmountNotMet => "Error: Target amount is not met.",
         }
     }
 }
